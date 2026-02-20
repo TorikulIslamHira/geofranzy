@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- ============================================
+         PERMISSIONS
+         All required permissions are declared here
+         ============================================ -->
+
+    <!-- Internet access (required for API calls) -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- Location — Fine location for accurate GPS -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <!-- Background location — needed for "nearby" notifications even when app is closed -->
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+
+    <!-- Foreground service — keeps location service alive in background -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+
+    <!-- Battery/Power — for reading battery level (SOS + battery indicator feature) -->
+    <uses-permission android:name="android.permission.BATTERY_STATS" />
+
+    <!-- Notifications -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Vibration — for SOS and nearby alerts -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <!-- Wake lock — ensure SOS alerts wake up even on Do Not Disturb -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <!-- Writing external storage — for OSMDroid map tile cache -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+
+    <application
+        android:name=".GeoFrenzyApp"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.GeoFrenzy"
+        android:usesCleartextTraffic="true">
+
+        <!-- Main Activity — the only activity in the app (Compose handles all screens) -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.GeoFrenzy.SplashScreen">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Background Location Tracking Service -->
+        <service
+            android:name=".services.LocationTrackingService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="location" />
+
+    </application>
+
+</manifest>

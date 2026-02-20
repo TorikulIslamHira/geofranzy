@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">GeoFrenzy</string>
+    <string name="nearby_notification_title">👋 Friend Nearby!</string>
+    <string name="nearby_notification_text">%s is within %d meters of you</string>
+    <string name="sos_notification_title">🆘 Emergency SOS!</string>
+    <string name="sos_notification_text">%s needs help! Tap to see their location</string>
+    <string name="weather_share_title">🌦️ Weather Update</string>
+    <string name="weather_share_text">%s shared their weather with you</string>
+    <string name="location_tracking_title">GeoFrenzy</string>
+    <string name="location_tracking_text">Sharing location with friends 📍</string>
+</resources>

@@ -1,0 +1,17 @@
+<resources>
+    <!-- Base theme — all activities inherit from this -->
+    <style name="Theme.GeoFrenzy" parent="android:Theme.Material.NoTitleBar">
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+
+    <!-- Splash screen theme — shown while app launches -->
+    <style name="Theme.GeoFrenzy.SplashScreen" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#0A0E1A</item>
+        <item name="windowSplashScreenAnimatedIcon">@android:drawable/ic_menu_mylocation</item>
+        <item name="postSplashScreenTheme">@style/Theme.GeoFrenzy</item>
+    </style>
+</resources>
