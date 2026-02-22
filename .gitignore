@@ -34,10 +34,12 @@ ios/
 ios/Pods/
 ios/Podfile.lock
 
-# Android
-android/
+# Android build artifacts only (android/ folder is bare workflow - tracked in git)
+android/.gradle/
 android/app/debug/
 android/app/release/
+android/app/build/
+android/build/
 
 # Temporary files
 *.tmp

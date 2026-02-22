@@ -20,6 +20,19 @@
       "args": ["firebase-server.js"],
       "cwd": "${workspaceFolder}/mcp-servers",
       "description": "Firebase Admin — Firestore queries, Auth lookups, Storage access (requires .mcp.env)"
+    },
+    "geofranzy-expo": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["expo-server.js"],
+      "cwd": "${workspaceFolder}/mcp-servers",
+      "description": "Expo.dev API — list/get/trigger EAS builds, view logs, update branches, submissions",
+      "env": {
+        "EXPO_TOKEN": "eTrx_tGrgUXG4MONQXZZJX6w8cPb6WNk_FVsZ82d",
+        "EXPO_APP_ID": "d3631605-7999-4833-b5b9-140d2c4cc9cb",
+        "EXPO_ACCOUNT": "tori.islam.hira",
+        "WORKSPACE_ROOT": "${workspaceFolder}"
+      }
     }
   }
 }

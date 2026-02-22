@@ -9,7 +9,9 @@
     "docs": "node docs-server.js",
     "docs:watch": "node --watch docs-server.js",
     "firebase": "node firebase-server.js",
-    "firebase:watch": "node --watch firebase-server.js"
+    "firebase:watch": "node --watch firebase-server.js",
+    "expo": "node expo-server.js",
+    "expo:watch": "node --watch expo-server.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.0",
