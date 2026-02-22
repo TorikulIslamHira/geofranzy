@@ -1,10 +1,15 @@
+import React from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import { auth } from '@services/firebase';
 import { useAuthStore } from '@store';
 import toast from 'react-hot-toast';
 
-function Layout() {
+interface LayoutProps {
+  children?: React.ReactNode;
+}
+
+function Layout({ children }: LayoutProps = {}) {
   const { user } = useAuthStore();
 
   const handleLogout = async () => {
@@ -106,7 +111,7 @@ function Layout() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Outlet />
+        {children ?? <Outlet />}
       </main>
     </div>
   );

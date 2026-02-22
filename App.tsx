@@ -24,7 +24,7 @@ const AppContent = () => {
   return (
     <>
       <RootNavigator />
-      <StatusBar barStyle="light-content" />
+      <StatusBar style="light" />
     </>
   );
 };

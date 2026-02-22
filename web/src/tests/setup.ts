@@ -1,6 +1,7 @@
 import { expect, afterEach } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import * as matchers from '@testing-library/jest-dom/matchers';
+import '@testing-library/jest-dom';
 
 // Extend Vitest's expect with jest-dom matchers
 expect.extend(matchers);
@@ -28,17 +29,20 @@ Object.defineProperty(window, 'matchMedia', {
 // Mock Geolocation API
 const mockGeolocation = {
   getCurrentPosition: (success: PositionCallback) => {
+    const coords: GeolocationCoordinates = {
+      latitude: 40.7128,
+      longitude: -74.0060,
+      accuracy: 10,
+      altitude: null,
+      altitudeAccuracy: null,
+      heading: null,
+      speed: null,
+      toJSON() { return this; },
+    };
     const position: GeolocationPosition = {
-      coords: {
-        latitude: 40.7128,
-        longitude: -74.0060,
-        accuracy: 10,
-        altitude: null,
-        altitudeAccuracy: null,
-        heading: null,
-        speed: null,
-      },
+      coords,
       timestamp: Date.now(),
+      toJSON() { return this; },
     };
     success(position);
   },

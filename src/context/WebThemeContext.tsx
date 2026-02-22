@@ -17,7 +17,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Colors } from '@/src/theme/theme';
+import { Colors } from '@theme/theme';
 
 export type Theme = 'light' | 'dark' | 'system';
 
@@ -37,6 +37,9 @@ export function WebThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>('system');
   const [isLoaded, setIsLoaded] = useState(false);
   const [systemTheme, setSystemTheme] = useState<'light' | 'dark'>('light');
+
+  // Derive isDark from current state (available before any effects)
+  const isDark = (theme === 'system' ? systemTheme : theme) === 'dark';
 
   // Load saved theme preference and detect system theme
   useEffect(() => {
@@ -113,15 +116,6 @@ export function WebThemeProvider({ children }: { children: React.ReactNode }) {
     await setTheme(newTheme);
   };
 
-  // Determine actual theme
-  const getActualTheme = (): 'light' | 'dark' => {
-    if (theme === 'system') {
-      return systemTheme;
-    }
-    return theme;
-  };
-
-  const isDark = getActualTheme() === 'dark';
   const colors = isDark ? Colors.dark : Colors.light;
 
   if (!isLoaded) {

@@ -164,7 +164,7 @@ class OfflineStorage {
     const index = store.index('synced');
 
     return new Promise((resolve, reject) => {
-      const request = index.getAll(false);
+      const request = index.getAll(false as unknown as IDBValidKey);
       request.onerror = () => reject(request.error);
       request.onsuccess = () => resolve(request.result);
     });
@@ -228,7 +228,7 @@ export async function requestBackgroundSync(tag: string): Promise<void> {
   if ('serviceWorker' in navigator && 'SyncManager' in window) {
     try {
       const registration = await navigator.serviceWorker.ready;
-      await registration.sync.register(tag);
+      await (registration as any).sync.register(tag);
       console.log(`Background sync registered: ${tag}`);
     } catch (error) {
       console.error(`Failed to register background sync for ${tag}:`, error);

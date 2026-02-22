@@ -28,7 +28,7 @@ export const mockFirestore = {
   limit: vi.fn(),
   onSnapshot: vi.fn(),
   serverTimestamp: vi.fn(() => new Date()),
-  GeoPoint: vi.fn((lat, lng) => ({ latitude: lat, longitude: lng })),
+  GeoPoint: vi.fn((lat: number, lng: number) => ({ latitude: lat, longitude: lng })),
 };
 
 // Mock Firebase Storage

@@ -12,14 +12,20 @@ interface AuthStore {
 interface LocationStore {
   currentLocation: { latitude: number; longitude: number } | null;
   friendsLocations: UserLocation[];
+  loading: boolean;
   setCurrentLocation: (location: { latitude: number; longitude: number } | null) => void;
   setFriendsLocations: (locations: UserLocation[]) => void;
+  setLoading: (loading: boolean) => void;
   updateFriendLocation: (location: UserLocation) => void;
 }
 
 interface SOSStore {
   activeAlerts: SOSAlert[];
+  myActiveAlert: SOSAlert | null;
+  loading: boolean;
   setActiveAlerts: (alerts: SOSAlert[]) => void;
+  setMyActiveAlert: (alert: SOSAlert | null) => void;
+  setLoading: (loading: boolean) => void;
   addAlert: (alert: SOSAlert) => void;
   removeAlert: (alertId: string) => void;
 }
@@ -35,8 +41,10 @@ export const useAuthStore = create<AuthStore>((set) => ({
 export const useLocationStore = create<LocationStore>((set) => ({
   currentLocation: null,
   friendsLocations: [],
+  loading: false,
   setCurrentLocation: (location) => set({ currentLocation: location }),
   setFriendsLocations: (locations) => set({ friendsLocations: locations }),
+  setLoading: (loading) => set({ loading }),
   updateFriendLocation: (location) =>
     set((state) => {
       const existing = state.friendsLocations.findIndex((l) => l.uid === location.uid);
@@ -51,7 +59,11 @@ export const useLocationStore = create<LocationStore>((set) => ({
 
 export const useSOSStore = create<SOSStore>((set) => ({
   activeAlerts: [],
+  myActiveAlert: null,
+  loading: false,
   setActiveAlerts: (alerts) => set({ activeAlerts: alerts }),
+  setMyActiveAlert: (alert) => set({ myActiveAlert: alert }),
+  setLoading: (loading) => set({ loading }),
   addAlert: (alert) =>
     set((state) => ({ activeAlerts: [...state.activeAlerts, alert] })),
   removeAlert: (alertId) =>

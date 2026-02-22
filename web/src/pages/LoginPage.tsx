@@ -44,7 +44,7 @@ function LoginPage() {
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.currentTarget.value)}
                 className="input-field"
                 placeholder="your@email.com"
                 required
@@ -58,7 +58,7 @@ function LoginPage() {
               <input
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.currentTarget.value)}
                 className="input-field"
                 placeholder="••••••••"
                 required

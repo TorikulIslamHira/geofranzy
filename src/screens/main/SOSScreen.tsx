@@ -12,13 +12,14 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { Colors, Spacing, Typography } from '../../theme/theme';
 import { broadcastSOS, getActiveSOSAlerts, resolveSOSAlert } from '../../services/firestoreService';
+import type { SOSAlert } from '../../services/firestoreService';
 import { getCurrentLocation } from '../../services/locationService';
 import { sendSOSNotification } from '../../services/notificationService';
 
 const SOSScreen = () => {
   const { user, userProfile } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [sosAlerts, setSOSAlerts] = useState([]);
+  const [sosAlerts, setSOSAlerts] = useState<SOSAlert[]>([]);
   const [broadcasting, setBroadcasting] = useState(false);
 
   useEffect(() => {
@@ -119,7 +120,7 @@ const SOSScreen = () => {
           <FlatList
             data={sosAlerts}
             renderItem={renderSOSAlert}
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item) => item.id ?? ''}
             scrollEnabled={false}
           />
         )}

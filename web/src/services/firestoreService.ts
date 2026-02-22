@@ -13,7 +13,6 @@ import {
   onSnapshot,
   GeoPoint,
   serverTimestamp,
-  Timestamp,
 } from 'firebase/firestore';
 import { db } from './firebase';
 import type { UserLocation, SOSAlert, MeetingRecord, WeatherData, FriendRequest } from '@types';
@@ -221,12 +220,12 @@ export async function getMeetingHistory(userId: string): Promise<MeetingRecord[]
 
   const [snapshot1, snapshot2] = await Promise.all([getDocs(q1), getDocs(q2)]);
 
-  const meetings = [
-    ...snapshot1.docs.map((doc) => ({ id: doc.id, ...doc.data() })),
-    ...snapshot2.docs.map((doc) => ({ id: doc.id, ...doc.data() })),
+  const meetings: MeetingRecord[] = [
+    ...snapshot1.docs.map((doc) => ({ id: doc.id, ...doc.data() } as MeetingRecord)),
+    ...snapshot2.docs.map((doc) => ({ id: doc.id, ...doc.data() } as MeetingRecord)),
   ];
 
-  return meetings.sort((a, b) => b.meetingTime - a.meetingTime) as MeetingRecord[];
+  return meetings.sort((a, b) => b.meetingTime - a.meetingTime);
 }
 
 // ==================== REAL-TIME LISTENERS ====================

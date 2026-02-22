@@ -7,7 +7,7 @@
 'use client';
 
 import React, { ReactNode } from 'react';
-import * as Sentry from '@sentry/nextjs';
+import * as Sentry from '@sentry/react';
 import { useThemeStore } from '../stores/themeStore';
 import styles from './ErrorBoundary.module.css';
 
@@ -52,7 +52,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 
     this.setState({
       error,
-      errorInfo: errorInfo.componentStack,
+      errorInfo: errorInfo.componentStack ?? null,
       errorCount,
     });
 

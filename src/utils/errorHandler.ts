@@ -77,7 +77,7 @@ class ErrorHandler {
         Sentry.captureException(error instanceof Error ? error : new Error(message), {
           level: severity,
           contexts: {
-            custom: context,
+            custom: context as unknown as Record<string, unknown>,
           },
           tags: {
             'error.source': 'error-handler',

@@ -14,6 +14,7 @@ const DB_NAME = 'geofrenzy-db';
 const DB_VERSION = 1;
 
 interface CacheEntry<T> {
+  _id?: number;
   id?: string;
   key: string;
   value: T;
@@ -71,7 +72,7 @@ export function initializeIndexedDB(): Promise<IDBDatabase> {
     };
 
     request.onsuccess = () => {
-      resolve((event.target as IDBOpenDBRequest).result);
+      resolve(request.result);
     };
   });
 }

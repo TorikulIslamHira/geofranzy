@@ -104,7 +104,7 @@ export async function cacheLocationUpdate(
  */
 export async function getLastKnownLocation(userId: string): Promise<any | null> {
   try {
-    const locations = await offlineStorage.getCachedLocations(userId);
+    const locations = await offlineStorage.getCachedLocations(userId) as any[];
     if (locations.length === 0) return null;
 
     // Sort by timestamp and get most recent
@@ -152,7 +152,7 @@ export async function cacheMessage(
  */
 export async function getConversationMessages(conversationId: string): Promise<any[]> {
   try {
-    return await offlineStorage.getCachedMessages(conversationId);
+    return await offlineStorage.getCachedMessages(conversationId) as any[];
   } catch (error) {
     console.error('[CacheManager] Failed to get messages:', error);
     return [];
@@ -181,7 +181,7 @@ export async function cacheEmergencyContacts(contacts: any[]): Promise<void> {
  */
 export async function getEmergencyContacts(): Promise<any[]> {
   try {
-    const contacts = await offlineStorage.getCachedData('settings', 'emergency-contacts');
+    const contacts = await offlineStorage.getCachedData('settings', 'emergency-contacts') as any[] | null;
     return contacts || [];
   } catch (error) {
     console.error('[CacheManager] Failed to get emergency contacts:', error);
@@ -270,7 +270,7 @@ export async function syncPendingActions(
 
         if (success) {
           await offlineStorage.removeSyncAction(
-            `${action.action}-${action.timestamp}`
+            `${action.action}-${(action as any).timestamp}`
           );
           results.successful++;
         } else {

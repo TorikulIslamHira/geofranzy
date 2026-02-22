@@ -27,15 +27,15 @@ export interface NotificationData {
 export const initializeNotifications = async (userId: string): Promise<void> => {
   try {
     // Get notification permissions
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
+    const existingPerms = await Notifications.getPermissionsAsync() as any;
+    let isGranted = existingPerms.granted ?? existingPerms.status === 'granted';
 
-    if (existingStatus !== 'granted') {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
+    if (!isGranted) {
+      const newPerms = await Notifications.requestPermissionsAsync() as any;
+      isGranted = newPerms.granted ?? newPerms.status === 'granted';
     }
 
-    if (finalStatus !== 'granted') {
+    if (!isGranted) {
       console.warn('Notification permissions not granted');
       return;
     }

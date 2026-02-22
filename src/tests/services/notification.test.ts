@@ -32,7 +32,7 @@ describe('Notification Service', () => {
       });
 
       const result = await Notifications.requestPermissionsAsync();
-      expect(result.status).toBe('granted');
+      expect((result as any).status).toBe('granted');
       expect(Notifications.requestPermissionsAsync).toHaveBeenCalled();
     });
 
@@ -42,7 +42,7 @@ describe('Notification Service', () => {
       });
 
       const result = await Notifications.requestPermissionsAsync();
-      expect(result.status).toBe('denied');
+      expect((result as any).status).toBe('denied');
     });
 
     it('should get Expo push token', async () => {

@@ -6,17 +6,17 @@
 
 import {
   Server,
-  StdioServerTransport,
+} from "@modelcontextprotocol/sdk/server/index.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import {
   McpError,
   ErrorCode,
-} from "@modelcontextprotocol/sdk/server/index.js";
+} from "@modelcontextprotocol/sdk/types.js";
 import {
   ListToolsRequestSchema,
   CallToolRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import admin from "firebase-admin";
-import * as fs from "fs";
-import * as path from "path";
 import * as dotenv from "dotenv";
 
 // Load environment variables
@@ -28,8 +28,6 @@ const server = new Server({
 });
 
 // Initialize Firebase Admin SDK
-let firebaseApp: admin.app.App;
-
 function initializeFirebase() {
   try {
     const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n");
@@ -40,7 +38,7 @@ function initializeFirebase() {
       throw new Error("Missing Firebase credentials in .mcp.env");
     }
 
-    firebaseApp = admin.initializeApp({
+    admin.initializeApp({
       credential: admin.credential.cert({
         projectId,
         clientEmail,

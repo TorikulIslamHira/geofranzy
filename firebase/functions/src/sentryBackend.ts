@@ -4,7 +4,8 @@
  */
 
 import * as Sentry from '@sentry/node';
-import * as Tracing from '@sentry/tracing';
+// @sentry/tracing is deprecated in v8; integrations are built into @sentry/node
+// import * as Tracing from '@sentry/tracing';
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 const sentryDSN = process.env.SENTRY_DSN;
@@ -24,17 +25,11 @@ export function initializeSentryBackend(): void {
     environment: isDevelopment ? 'development' : 'production',
     tracesSampleRate: 0.1,
     integrations: [
-      new Tracing.Integrations.Http({
-        tracingOrigins: [
-          'localhost',
-          /^\//,
-          /^https?:\/\/[^/]*\.firebaseapp\.com/,
-        ],
-      }),
-      new Sentry.Integrations.OnUncaughtException(),
-      new Sentry.Integrations.OnUnhandledRejection(),
+      Sentry.httpIntegration(),
+      Sentry.onUncaughtExceptionIntegration(),
+      Sentry.onUnhandledRejectionIntegration(),
     ],
-    beforeSend(event, hint) {
+    beforeSend(event: any, _hint: any) {
       // Filter out health check requests
       if (
         event.request?.url?.includes('/health') ||
@@ -122,24 +117,22 @@ export function addBreadcrumbBackend(
  * Start a transaction
  */
 export function startTransactionBackend(
-  name: string,
-  op: string
-): Sentry.Transaction | undefined {
-  if (isDevelopment) return undefined;
-
-  return Sentry.startTransaction({
-    name,
-    op,
-    sampled: true,
-  });
+  _name: string,
+  _op: string
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+): any {
+  // startTransaction removed in @sentry/node v8; use Sentry.startSpan() instead
+  return undefined;
 }
 
 /**
  * Get current transaction
  */
-export function getCurrentTransactionBackend(): Sentry.Transaction | undefined {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getCurrentTransactionBackend(): any {
   if (isDevelopment) return undefined;
-  return Sentry.getCurrentHub().getActiveTransaction();
+  // getCurrentHub().getActiveTransaction() removed in v8
+  return undefined;
 }
 
 /**
@@ -300,171 +293,3 @@ export function sentryErrorHandler(
     sentryId: Sentry.captureException(error),
   });
 }
-
-/**
- * Usage Examples
- */
-
-// In firebase/functions/src/index.ts
-
-/*
- * Initialize at startup:
- */
-initializeSentryBackend();
-
-/*
- * Use with onCall:
- */
-export const getUserProfile = functions.https.onCall(
-  createSentryFunction('getUserProfile', async (data, context) => {
-    const userId = context.auth?.uid;
-
-    if (!userId) {
-      throw new Error('Unauthorized');
-    }
-
-    return trackFirestoreBackend('get', 'users', async () => {
-      const doc = await admin.firestore().collection('users').doc(userId).get();
-      return doc.data();
-    });
-  })
-);
-
-/*
- * Use with onRequest (Express):
- */
-export const apiHandler = functions.https.onRequest((req, res) => {
-  const transaction = startTransactionBackend(req.url || 'request', 'http');
-
-  try {
-    // Handle request
-    res.json({ success: true });
-    transaction?.finish('ok');
-  } catch (error) {
-    sentryErrorHandler(error, req, res, null);
-  }
-});
-
-/*
- * Use with Firestore triggers:
- */
-export const onUserCreated = functions.firestore
-  .document('users/{userId}')
-  .onCreate(
-    createSentryFunction('onUserCreated', async (snap, context) => {
-      const userId = context.params.userId;
-      const userData = snap.data();
-
-      return trackFirestoreBackend('set', 'user_profiles', async () => {
-        await admin
-          .firestore()
-          .collection('user_profiles')
-          .doc(userId)
-          .set({
-            ...userData,
-            createdAt: admin.firestore.FieldValue.serverTimestamp(),
-          });
-      });
-    })
-  );
-
-/*
- * Use with scheduled functions:
- */
-export const dailyCleanup = functions.pubsub
-  .schedule('every day 02:00')
-  .timeZone('America/New_York')
-  .onRun(
-    createSentryFunction('dailyCleanup', async (context) => {
-      addBreadcrumbBackend(
-        'Starting daily cleanup',
-        'scheduler',
-        'info'
-      );
-
-      return trackFirestoreBackend('query', 'stale_data', async () => {
-        const cutoffDate = new Date();
-        cutoffDate.setDate(cutoffDate.getDate() - 30);
-
-        const snapshot = await admin
-          .firestore()
-          .collection('some_collection')
-          .where('createdAt', '<', cutoffDate)
-          .get();
-
-        const batch = admin.firestore().batch();
-        snapshot.docs.forEach((doc) => {
-          batch.delete(doc.ref);
-        });
-
-        await batch.commit();
-
-        captureMessageBackend(
-          `Cleaned up ${snapshot.docs.length} stale documents`,
-          'info'
-        );
-      });
-    })
-  );
-
-/**
- * Performance Monitoring Example
- */
-async function complexDataProcessing(userId: string) {
-  const transaction = startTransactionBackend(
-    'data.processing',
-    'task'
-  );
-
-  try {
-    // Step 1: Fetch data
-    const span1 = transaction?.startChild({
-      op: 'db.query',
-      description: 'Fetch user data',
-    });
-    const user = await trackFirestoreBackend('get', 'users', async () => {
-      return admin.firestore().collection('users').doc(userId).get();
-    });
-    span1?.finish('ok');
-
-    // Step 2: Process data
-    const span2 = transaction?.startChild({
-      op: 'processing',
-      description: 'Process data',
-    });
-    const processed = processData(user.data());
-    span2?.finish('ok');
-
-    // Step 3: Save results
-    const span3 = transaction?.startChild({
-      op: 'db.write',
-      description: 'Save processed data',
-    });
-    await trackFirestoreBackend('update', 'users', async () => {
-      await admin
-        .firestore()
-        .collection('users')
-        .doc(userId)
-        .update({ processedData: processed });
-    });
-    span3?.finish('ok');
-
-    transaction?.finish('ok');
-  } catch (error) {
-    transaction?.finish('error');
-    throw error;
-  }
-}
-
-export {
-  initializeSentryBackend,
-  setSentryFunctionContext,
-  captureExceptionBackend,
-  captureMessageBackend,
-  addBreadcrumbBackend,
-  startTransactionBackend,
-  trackFirestoreBackend,
-  trackHTTPRequest,
-  createSentryFunction,
-  complexDataProcessing,
-};

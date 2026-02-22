@@ -11,7 +11,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useWebTheme } from '@/src/context/WebThemeContext';
+import { useWebTheme } from '@context/WebThemeContext';
 import styles from './WebThemeToggle.module.css';
 
 interface WebThemeToggleProps {

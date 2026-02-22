@@ -72,7 +72,7 @@ export const getFriendsList = async (userId: string): Promise<Friend[]> => {
     return snapshot.docs.map((doc) => ({
       ...doc.data(),
       docId: doc.id,
-    })) as Friend[];
+    })) as unknown as Friend[];
   } catch (error) {
     console.error('Error getting friends list:', error);
     throw error;

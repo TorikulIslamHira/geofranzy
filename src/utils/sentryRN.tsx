@@ -3,8 +3,9 @@
  * Mobile app error monitoring and performance tracking
  */
 
+import React from 'react';
 import * as Sentry from '@sentry/react-native';
-import { Platform } from 'react-native';
+import { Platform, Text, TouchableOpacity, View } from 'react-native';
 
 const isDevelopment = process.env.NODE_ENV === 'development' || __DEV__;
 const sentryDSN = process.env.EXPO_PUBLIC_SENTRY_DSN;
@@ -22,7 +23,7 @@ export function initializeSentryRN() {
   Sentry.init({
     dsn: sentryDSN,
     environment: __DEV__ ? 'development' : 'production',
-    releaseVersion: process.env.EXPO_PUBLIC_APP_VERSION,
+    release: process.env.EXPO_PUBLIC_APP_VERSION,
     tracesSampleRate: 0.1, // 10% transaction sample rate
     replaysSessionSampleRate: 0.1,
     replaysOnErrorSampleRate: 1.0,
@@ -42,13 +43,8 @@ export function initializeSentryRN() {
       return event;
     },
     integrations: [
-      new Sentry.ReactNativeTracing({
-        tracingOrigins: [
-          'localhost',
-          'geofrenzy-28807.firebaseapp.com',
-          /^\//,
-        ],
-        routingInstrumentation: new Sentry.ReactNavigationInstrumentation(),
+      Sentry.reactNavigationIntegration({
+        routeChangeTimeoutMs: 1000,
       }),
     ],
   });
@@ -63,16 +59,12 @@ export function initializeSentryRN() {
  * Call this with your navigation ref
  */
 export function initializeNavigationTracing(navigationRef: any) {
-  const routing = new Sentry.ReactNavigationInstrumentation();
+  const integration = Sentry.reactNavigationIntegration();
   Sentry.init({
-    integrations: [
-      new Sentry.ReactNativeTracing({
-        routingInstrumentation: routing,
-      }),
-    ],
+    integrations: [integration],
   });
 
-  return routing;
+  return integration;
 }
 
 /**
@@ -155,14 +147,10 @@ export function addBreadcrumbRN(
 /**
  * Start performance transaction
  */
-export function startTransactionRN(name: string, op: string) {
-  if (isDevelopment) return null;
-
-  return Sentry.startTransaction({
-    name,
-    op,
-    sampled: true,
-  });
+export function startTransactionRN(_name: string, _op: string) {
+  // startTransaction was removed in Sentry v5+; return null as no-op
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return null as any;
 }
 
 /**
@@ -260,9 +248,9 @@ export function withSentryErrorBoundary<P extends object>(
 ): React.ComponentType<P> {
   return Sentry.withErrorBoundary(Component, {
     fallback: ({ error, resetError }) => {
-      errorHandler?.(error);
+      errorHandler?.(error as Error);
       return (
-        <Sentry.View
+        <View
           style={{
             flex: 1,
             justifyContent: 'center',
@@ -287,7 +275,7 @@ export function withSentryErrorBoundary<P extends object>(
           >
             <Text style={{ color: '#fff', fontWeight: '600' }}>Try Again</Text>
           </TouchableOpacity>
-        </Sentry.View>
+        </View>
       );
     },
     showDialog: !isDevelopment,

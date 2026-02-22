@@ -1,5 +1,5 @@
 import { initializeFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
-import { app } from './firebase';
+import app from '../services/firebase';
 
 /**
  * Initialize Firestore with offline persistence

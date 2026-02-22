@@ -12,7 +12,7 @@ import {
   Modal,
   SafeAreaView,
 } from 'react-native';
-import { useTheme } from '@/src/context/ThemeContext';
+import { useTheme } from '@context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 
 interface ThemeToggleProps {

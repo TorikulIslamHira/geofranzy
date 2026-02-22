@@ -58,7 +58,7 @@ function SignupPage() {
               <input
                 type="text"
                 value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDisplayName(e.currentTarget.value)}
                 className="input-field"
                 placeholder="John Doe"
                 required
@@ -72,7 +72,7 @@ function SignupPage() {
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.currentTarget.value)}
                 className="input-field"
                 placeholder="your@email.com"
                 required
@@ -86,7 +86,7 @@ function SignupPage() {
               <input
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.currentTarget.value)}
                 className="input-field"
                 placeholder="••••••••"
                 minLength={6}

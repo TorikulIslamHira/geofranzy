@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useAuthStore, useLocationStore } from '@store';
 import { subscribeToFriendsLocations } from '@services/firestoreService';
-import { getCurrentLocation, watchLocation, clearLocationWatch } from '@utils/location';
+import { getCurrentLocation, clearLocationWatch } from '@utils/location';
 import { updateLocation } from '@services/firestoreService';
 
 export function useLocation() {

@@ -35,8 +35,8 @@ export function initializeSentry() {
       /^https:\/\/.*\.ads\.com/i,
     ],
     integrations: [
-      new Sentry.Replay(),
-      new Sentry.NetworkActivityIntegration(),
+      // Session Replay: enable after configuring DSN in production
+      // Sentry.replayIntegration(),
     ],
   });
 
@@ -104,14 +104,10 @@ export function captureMessage(
 /**
  * Start performance transaction
  */
-export function startTransaction(name: string, op: string) {
-  if (isDevelopment) return null;
-
-  return Sentry.startTransaction({
-    name,
-    op,
-    sampled: true,
-  });
+export function startTransaction(_name: string, _op: string) {
+  // startTransaction removed in Sentry v8; use spans via Sentry.startSpan() instead
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return null as any;
 }
 
 /**
@@ -203,22 +199,25 @@ export function withErrorBoundary<P extends object>(
   Component: React.ComponentType<P>,
   fallback?: React.ComponentType<{ error: Error; resetError: () => void }>
 ) {
-  const Wrapped = (props: P) => (
-    <Sentry.ErrorBoundary
-      fallback={
-        fallback ? (
-          <fallback error={new Error('Unknown error')} resetError={() => {}} />
-        ) : (
-          <div style={{ padding: '20px', textAlign: 'center' }}>
-            <h2>Something went wrong</h2>
-            <p>Our team has been notified. Please try again later.</p>
-          </div>
-        )
-      }
-    >
-      <Component {...props} />
-    </Sentry.ErrorBoundary>
-  );
+  const Wrapped = (props: P) => {
+    const FallbackComponent = fallback;
+    return (
+      <Sentry.ErrorBoundary
+        fallback={
+          FallbackComponent ? (
+            <FallbackComponent error={new Error('Unknown error')} resetError={() => {}} />
+          ) : (
+            <div style={{ padding: '20px', textAlign: 'center' }}>
+              <h2>Something went wrong</h2>
+              <p>Our team has been notified. Please try again later.</p>
+            </div>
+          )
+        }
+      >
+        <Component {...props} />
+      </Sentry.ErrorBoundary>
+    );
+  };
 
   return Wrapped;
 }

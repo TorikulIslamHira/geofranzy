@@ -11,7 +11,7 @@ interface ThemeStore {
   initializeTheme: () => void;
 }
 
-export const useThemeStore = create<ThemeStore>(
+export const useThemeStore = create<ThemeStore>()(
   persist(
     (set, get) => ({
       theme: 'system',

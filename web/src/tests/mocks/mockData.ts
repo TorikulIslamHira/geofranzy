@@ -5,15 +5,7 @@ export const mockUser: User = {
   email: 'test@example.com',
   displayName: 'Test User',
   photoURL: 'https://example.com/photo.jpg',
-  friends: ['friend-1', 'friend-2'],
-  friendRequests: [],
-  settings: {
-    shareLocation: true,
-    ghostMode: false,
-    notificationsEnabled: true,
-  },
   createdAt: new Date('2024-01-01'),
-  updatedAt: new Date('2024-01-15'),
 };
 
 export const mockUserLocation: UserLocation = {
@@ -21,7 +13,7 @@ export const mockUserLocation: UserLocation = {
   latitude: 40.7128,
   longitude: -74.0060,
   displayName: 'Test User',
-  timestamp: new Date(),
+  timestamp: Date.now(),
   isGhostMode: false,
 };
 
@@ -34,7 +26,7 @@ export const mockSOSAlert: SOSAlert = {
     longitude: -74.0060,
   },
   message: 'Need help!',
-  timestamp: new Date(),
+  timestamp: Date.now(),
   status: 'active',
   recipients: ['friend-1', 'friend-2'],
 };
@@ -49,8 +41,8 @@ export const mockMeetingRecord: MeetingRecord = {
     latitude: 40.7128,
     longitude: -74.0060,
   },
-  startTime: new Date('2024-01-15T10:00:00'),
-  endTime: new Date('2024-01-15T11:00:00'),
+  meetingTime: new Date('2024-01-15T10:00:00').getTime(),
+  meetingEndTime: new Date('2024-01-15T11:00:00').getTime(),
   duration: 60,
 };
 
@@ -59,31 +51,14 @@ export const mockFriends: User[] = [
     uid: 'friend-1',
     email: 'friend1@example.com',
     displayName: 'Friend One',
-    photoURL: null,
-    friends: ['test-user-123'],
-    friendRequests: [],
-    settings: {
-      shareLocation: true,
-      ghostMode: false,
-      notificationsEnabled: true,
-    },
     createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-15'),
   },
   {
     uid: 'friend-2',
     email: 'friend2@example.com',
     displayName: 'Friend Two',
-    photoURL: null,
-    friends: ['test-user-123'],
-    friendRequests: [],
-    settings: {
-      shareLocation: true,
-      ghostMode: true,
-      notificationsEnabled: true,
-    },
+    ghostMode: true,
     createdAt: new Date('2024-01-02'),
-    updatedAt: new Date('2024-01-15'),
   },
 ];
 
@@ -93,7 +68,7 @@ export const mockFriendsLocations: UserLocation[] = [
     latitude: 40.7139,
     longitude: -74.0065,
     displayName: 'Friend One',
-    timestamp: new Date(),
+    timestamp: Date.now(),
     isGhostMode: false,
   },
   {
@@ -101,7 +76,7 @@ export const mockFriendsLocations: UserLocation[] = [
     latitude: 40.7150,
     longitude: -74.0080,
     displayName: 'Friend Two',
-    timestamp: new Date(),
+    timestamp: Date.now(),
     isGhostMode: true,
   },
 ];
