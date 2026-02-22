@@ -29,10 +29,12 @@ build/
 .ruby-version
 
 # iOS
+ios/
 ios/Pods/
 ios/Podfile.lock
 
 # Android
+android/
 android/app/debug/
 android/app/release/
 
