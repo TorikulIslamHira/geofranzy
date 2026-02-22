@@ -3,6 +3,9 @@
     "name": "Geofranzy",
     "slug": "geofranzy",
     "version": "1.0.0",
+    "cli": {
+      "appVersionSource": "dynamic"
+    },
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "splash": {
@@ -28,7 +31,9 @@
       [
         "expo-notifications",
         {
-          "sounds": ["./assets/notification.wav"],
+          "sounds": [
+            "./assets/notification.wav"
+          ],
           "icon": "./assets/notification-icon.png",
           "color": "#FF6B6B"
         }
@@ -39,7 +44,10 @@
       "infoPlist": {
         "NSLocationAlwaysAndWhenInUseUsageDescription": "We need your location to show nearby friends",
         "NSLocationWhenInUseUsageDescription": "We need your location to show nearby friends",
-        "UIBackgroundModes": ["location", "processing"]
+        "UIBackgroundModes": [
+          "location",
+          "processing"
+        ]
       }
     },
     "android": {
@@ -61,6 +69,9 @@
     "extra": {
       "router": {
         "origin": false
+      },
+      "eas": {
+        "projectId": "d3631605-7999-4833-b5b9-140d2c4cc9cb"
       }
     }
   }

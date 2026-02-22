@@ -4,8 +4,8 @@
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web",
     "prebuild": "expo prebuild",
     "build:android": "eas build --platform android",
@@ -32,6 +32,7 @@
     "expo-status-bar": "^1.12.0",
     "expo-task-manager": "^11.0.0",
     "firebase": "^10.7.0",
+    "graphql": "^16.12.0",
     "react": "18.2.0",
     "react-native": "0.74.1",
     "react-native-gesture-handler": "^2.14.0",
