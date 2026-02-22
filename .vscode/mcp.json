@@ -1,0 +1,25 @@
+{
+  "servers": {
+    "geofranzy-memory": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["memory-server.js"],
+      "cwd": "${workspaceFolder}/mcp-servers",
+      "description": "Geofranzy project memory — call recall_all at start of every session to restore full context"
+    },
+    "geofranzy-docs": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["docs-server.js"],
+      "cwd": "${workspaceFolder}/mcp-servers",
+      "description": "Docs browser — fetch npm package info, Expo SDK 51 compat table, any URL, GitHub files"
+    },
+    "geofranzy-firebase": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["firebase-server.js"],
+      "cwd": "${workspaceFolder}/mcp-servers",
+      "description": "Firebase Admin — Firestore queries, Auth lookups, Storage access (requires .mcp.env)"
+    }
+  }
+}

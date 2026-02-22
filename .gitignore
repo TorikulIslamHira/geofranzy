@@ -17,6 +17,7 @@ npm-debug.log
 
 # IDE
 .vscode/
+!.vscode/mcp.json
 .idea/
 *.swp
 *.swo
@@ -48,3 +49,6 @@ GoogleService-Info.plist
 
 # EAS
 eas-hook.tar.gz
+
+# MCP servers
+mcp-servers/.project-memory.json
