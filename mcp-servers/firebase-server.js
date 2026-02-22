@@ -8,27 +8,34 @@ import admin from "firebase-admin";
 import fs from "fs";
 import path from "path";
 import dotenv from "dotenv";
-import { Server, StdioServerTransport } from "@modelcontextprotocol/sdk/server/index.js";
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { ListToolsRequestSchema, CallToolRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 
 dotenv.config({ path: "../.mcp.env" });
 
-const server = new Server({
-  name: "firebase-mcp-server",
-  version: "1.0.0",
-});
+const server = new Server(
+  { name: "firebase-mcp-server", version: "1.0.0" },
+  { capabilities: { tools: {} } }
+);
 
 // Initialize Firebase Admin SDK
+let firebaseInitError = null;
+
 function initializeFirebase() {
   try {
-    const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n");
+    const rawKey = process.env.FIREBASE_PRIVATE_KEY ?? "";
+    // dotenv may or may not interpret \n — handle both cases
+    const privateKey = rawKey.includes("\\n")
+      ? rawKey.replace(/\\n/g, "\n")
+      : rawKey;
     const projectId = process.env.FIREBASE_PROJECT_ID;
     const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
 
     if (!privateKey || !projectId || !clientEmail) {
       throw new Error(
-        `Missing Firebase credentials. Check .mcp.env file.
-       Required: FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY`
+        "Missing Firebase credentials. Check .mcp.env file. " +
+        "Required: FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY"
       );
     }
 
@@ -42,13 +49,20 @@ function initializeFirebase() {
 
     console.error("[Firebase] ✓ Initialized successfully");
   } catch (error) {
-    console.error("[Firebase] ✗ Initialization failed:", error.message);
-    process.exit(1);
+    firebaseInitError = error.message;
+    console.error("[Firebase] ✗ Initialization failed (server still running):", error.message);
+  }
+}
+
+function requireFirebase() {
+  if (firebaseInitError) {
+    throw new Error(`Firebase not available: ${firebaseInitError}`);
   }
 }
 
 // Tool handlers
 async function handleFirestoreQuery(params) {
+  requireFirebase();
   const db = admin.firestore();
   let query = db.collection(params.collection);
 
@@ -72,6 +86,7 @@ async function handleFirestoreQuery(params) {
 }
 
 async function handleFirestoreWrite(params) {
+  requireFirebase();
   const db = admin.firestore();
   const ref = params.docId
     ? db.collection(params.collection).doc(params.docId)
@@ -87,6 +102,7 @@ async function handleFirestoreWrite(params) {
 }
 
 async function handleFirestoreDelete(params) {
+  requireFirebase();
   const db = admin.firestore();
   await db.collection(params.collection).doc(params.docId).delete();
 
@@ -98,6 +114,7 @@ async function handleFirestoreDelete(params) {
 }
 
 async function handleAuthUserInfo(params) {
+  requireFirebase();
   const auth = admin.auth();
   const user = await auth.getUser(params.uid);
 
@@ -113,6 +130,7 @@ async function handleAuthUserInfo(params) {
 }
 
 async function handleStorageList(params) {
+  requireFirebase();
   const storage = admin.storage();
   const bucket = storage.bucket();
   const [files] = await bucket.getFiles({
