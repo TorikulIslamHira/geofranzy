@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GeoFrenzy - Offline</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+        color: #ffffff;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 500px;
+        text-align: center;
+      }
+
+      .icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 20px;
+        padding: 20px;
+        background: rgba(255, 107, 107, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .icon svg {
+        width: 80px;
+        height: 80px;
+        stroke: #FF6B6B;
+        fill: none;
+      }
+
+      h1 {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 12px;
+        color: #ffffff;
+      }
+
+      .message {
+        font-size: 16px;
+        color: #aaaaaa;
+        margin-bottom: 30px;
+        line-height: 1.5;
+      }
+
+      .offline-features {
+        background: rgba(26, 26, 26, 0.8);
+        border: 1px solid #333333;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 30px;
+        text-align: left;
+      }
+
+      .offline-features h2 {
+        font-size: 14px;
+        font-weight: 600;
+        color: #FF6B6B;
+        margin-bottom: 12px;
+        text-transform: uppercase;
+        text-align: center;
+      }
+
+      .offline-features ul {
+        list-style: none;
+      }
+
+      .offline-features li {
+        padding: 8px 0;
+        color: #aaaaaa;
+        font-size: 14px;
+        border-bottom: 1px solid #333333;
+      }
+
+      .offline-features li:last-child {
+        border-bottom: none;
+      }
+
+      .offline-features li::before {
+        content: '✓ ';
+        color: #51CF66;
+        font-weight: 600;
+        margin-right: 8px;
+      }
+
+      .status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 16px;
+        background: rgba(255, 179, 71, 0.1);
+        border: 1px solid rgba(255, 179, 71, 0.3);
+        border-radius: 8px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        color: #FFD93D;
+      }
+
+      .status::before {
+        content: '';
+        width: 8px;
+        height: 8px;
+        background: #FFD93D;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.3;
+        }
+      }
+
+      .button {
+        display: inline-block;
+        padding: 12px 24px;
+        background: #FF6B6B;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+      }
+
+      .button:hover {
+        background: #FF5252;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(255, 107, 107, 0.3);
+      }
+
+      .button:active {
+        transform: translateY(0);
+      }
+
+      .tips {
+        margin-top: 30px;
+        padding-top: 30px;
+        border-top: 1px solid #333333;
+        text-align: left;
+      }
+
+      .tips h3 {
+        font-size: 14px;
+        color: #FF6B6B;
+        margin-bottom: 12px;
+        text-transform: uppercase;
+      }
+
+      .tips p {
+        font-size: 14px;
+        color: #aaaaaa;
+        margin-bottom: 8px;
+        line-height: 1.5;
+      }
+
+      .tips strong {
+        color: #ffffff;
+      }
+
+      @media (max-width: 600px) {
+        h1 {
+          font-size: 24px;
+        }
+
+        .message {
+          font-size: 15px;
+        }
+
+        .button {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <!-- Icon -->
+      <div class="icon">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 6v6m0 3v0.01" />
+        </svg>
+      </div>
+
+      <!-- Header -->
+      <h1>You're Offline</h1>
+      <p class="message">
+        Check your internet connection. Some features are still available.
+      </p>
+
+      <!-- Status -->
+      <div class="status">Waiting for connection...
+      </div>
+
+      <!-- Offline Features -->
+      <div class="offline-features">
+        <h2>Available Offline</h2>
+        <ul>
+          <li>View cached maps and locations</li>
+          <li>Access your saved friend list</li>
+          <li>Read offline content</li>
+          <li>Compose messages (synced when online)</li>
+        </ul>
+      </div>
+
+      <!-- Action Button -->
+      <button class="button" onclick="window.location.reload()">
+        Try Again
+      </button>
+
+      <!-- Tips -->
+      <div class="tips">
+        <h3>Tips</h3>
+        <p>
+          <strong>Wi-Fi:</strong> Check if Wi-Fi is enabled and in range
+        </p>
+        <p>
+          <strong>Mobile Data:</strong> Enable mobile data if available
+        </p>
+        <p>
+          <strong>Airplane Mode:</strong> Turn off Airplane Mode if enabled
+        </p>
+        <p>
+          <strong>Try Waiting:</strong> Connection may reconnect automatically
+        </p>
+      </div>
+    </div>
+
+    <!-- Script to handle reconnection -->
+    <script>
+      let isOnline = navigator.onLine;
+      const statusElement = document.querySelector('.status');
+      const button = document.querySelector('.button');
+
+      function updateStatus() {
+        if (navigator.onLine) {
+          // Back online
+          statusElement.textContent = '✓ Connection restored!';
+          statusElement.style.background = 'rgba(81, 207, 102, 0.1)';
+          statusElement.style.borderColor = 'rgba(81, 207, 102, 0.3)';
+          statusElement.style.color = '#51CF66';
+
+          // Reload in 2 seconds
+          setTimeout(() => {
+            window.location.reload();
+          }, 2000);
+        }
+      }
+
+      window.addEventListener('online', updateStatus);
+      window.addEventListener('offline', () => {
+        statusElement.textContent = 'Connection lost';
+      });
+
+      // Check connection every 5 seconds
+      setInterval(() => {
+        if (navigator.onLine && !isOnline) {
+          isOnline = true;
+          updateStatus();
+        } else if (!navigator.onLine && isOnline) {
+          isOnline = false;
+          statusElement.textContent = 'Waiting for connection...';
+        }
+      }, 5000);
+    </script>
+  </body>
+</html>

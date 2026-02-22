@@ -1,0 +1,66 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // ==================== HELPER FUNCTIONS ====================
+    
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Check if the file is an image
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+    
+    // Check if file size is under limit (5MB)
+    function isUnderSizeLimit() {
+      return request.resource.size < 5 * 1024 * 1024;
+    }
+    
+    // ==================== PROFILE PHOTOS ====================
+    
+    // Profile photos: /profile-photos/{userId}/{filename}
+    match /profile-photos/{userId}/{fileName} {
+      // Anyone can read profile photos (they're public)
+      allow read: if true;
+      
+      // Only the user can upload/update their own profile photo
+      allow create, update: if isAuthenticated() &&
+                               request.auth.uid == userId &&
+                               isImage() &&
+                               isUnderSizeLimit();
+      
+      // Only the user can delete their own profile photo
+      allow delete: if isAuthenticated() &&
+                       request.auth.uid == userId;
+    }
+    
+    // ==================== SHARED IMAGES ====================
+    
+    // Shared images (e.g., location snapshots): /shared-images/{userId}/{filename}
+    match /shared-images/{userId}/{fileName} {
+      // Friends can read shared images (public for now, can add friend check later)
+      allow read: if isAuthenticated();
+      
+      // Only the user can upload their own shared images
+      allow create, update: if isAuthenticated() &&
+                               request.auth.uid == userId &&
+                               isImage() &&
+                               isUnderSizeLimit();
+      
+      // Only the user can delete their own shared images
+      allow delete: if isAuthenticated() &&
+                       request.auth.uid == userId;
+    }
+    
+    // ==================== DEFAULT DENY ====================
+    
+    // Deny all other access by default
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

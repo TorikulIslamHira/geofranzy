@@ -1,0 +1,187 @@
+/**
+ * Web Theme Toggle Styles
+ */
+
+.iconButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.2s ease-in-out;
+  width: 40px;
+  height: 40px;
+}
+
+.iconButton:hover {
+  background-color: var(--color-surface-variant);
+  transform: scale(1.05);
+}
+
+.iconButton:active {
+  transform: scale(0.95);
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.button:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+.button:active {
+  transform: translateY(0);
+}
+
+.icon {
+  display: flex;
+  width: 20px;
+  height: 20px;
+  color: currentColor;
+}
+
+.selectContainer {
+  position: relative;
+  display: inline-block;
+}
+
+.selectButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.selectButton:hover {
+  border-color: var(--color-primary);
+  background-color: var(--color-surface-variant);
+}
+
+.selectButton:active {
+  transform: scale(0.98);
+}
+
+.dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  min-width: 140px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  overflow: hidden;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 12px;
+  background: none;
+  border: none;
+  color: var(--color-text);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  text-align: left;
+}
+
+.option:not(:last-child) {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.option:hover:not(.active) {
+  background-color: var(--color-surface-variant);
+}
+
+.option.active {
+  background-color: var(--color-surface-variant);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.label {
+  flex: 1;
+}
+
+.checkmark {
+  margin-left: 8px;
+  font-weight: bold;
+}
+
+/* CSS Variables for theming */
+:root[data-theme='light'] {
+  --color-background: #ffffff;
+  --color-surface: #f5f5f5;
+  --color-surface-variant: #e8e8e8;
+  --color-primary: #ff6b6b;
+  --color-text: #000000;
+  --color-text-secondary: #666666;
+  --color-border: #cccccc;
+}
+
+:root[data-theme='dark'] {
+  --color-background: #0a0a0a;
+  --color-surface: #1a1a1a;
+  --color-surface-variant: #2a2a2a;
+  --color-primary: #ff6b6b;
+  --color-text: #ffffff;
+  --color-text-secondary: #aaaaaa;
+  --color-border: #333333;
+}
+
+/* Animations for theme transitions */
+body {
+  transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+}
+
+body.dark-mode {
+  background-color: #0a0a0a;
+  color: #ffffff;
+}
+
+body.light-mode {
+  background-color: #ffffff;
+  color: #000000;
+}

@@ -1,0 +1,172 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ==================== HELPER FUNCTIONS ====================
+    
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Check if user is the owner of the document
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Check if user is one of the participants
+    function isParticipant(userId1, userId2) {
+      return isAuthenticated() && 
+             (request.auth.uid == userId1 || request.auth.uid == userId2);
+    }
+    
+    // Check if user exists
+    function userExists(userId) {
+      return exists(/databases/$(database)/documents/users/$(userId));
+    }
+    
+    // Check if users are friends
+    function areFriends(userId, friendId) {
+      return exists(/databases/$(database)/documents/friends/$(userId + '_' + friendId)) ||
+             exists(/databases/$(database)/documents/friends/$(friendId + '_' + userId));
+    }
+    
+    // ==================== USERS COLLECTION ====================
+    
+    match /users/{userId} {
+      // Anyone authenticated can read public user profiles
+      allow read: if isAuthenticated();
+      
+      // Only the user can create their own profile
+      allow create: if isOwner(userId) &&
+                       request.resource.data.uid == userId &&
+                       request.resource.data.email is string &&
+                       request.resource.data.displayName is string;
+      
+      // Only the user can update their own profile
+      allow update: if isOwner(userId) &&
+                       // Prevent changing uid and email
+                       request.resource.data.uid == resource.data.uid &&
+                       request.resource.data.email == resource.data.email;
+      
+      // Only the user can delete their own profile
+      allow delete: if isOwner(userId);
+    }
+    
+    // ==================== LOCATIONS COLLECTION ====================
+    
+    match /locations/{locationId} {
+      // Friends can read location if user is not in ghost mode
+      allow read: if isAuthenticated() &&
+                     (isOwner(resource.data.userId) ||
+                      (areFriends(request.auth.uid, resource.data.userId) &&
+                       get(/databases/$(database)/documents/users/$(resource.data.userId)).data.ghostMode == false));
+      
+      // Only the user can create/update their own location
+      allow create, update: if isAuthenticated() &&
+                               resource.data.userId == request.auth.uid &&
+                               request.resource.data.userId == request.auth.uid;
+      
+      // Only the user can delete their own location
+      allow delete: if isOwner(resource.data.userId);
+    }
+    
+    // ==================== FRIENDS COLLECTION ====================
+    
+    match /friends/{friendshipId} {
+      // Both users in the friendship can read
+      allow read: if isAuthenticated() &&
+                     (request.auth.uid == resource.data.userId ||
+                      request.auth.uid == resource.data.friendId);
+      
+      // Only the user can send a friend request
+      allow create: if isOwner(resource.data.userId) &&
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.status == 'pending' &&
+                       userExists(request.resource.data.friendId);
+      
+      // Only the friend can accept/reject the request
+      // Or the sender can cancel it
+      allow update: if (isOwner(resource.data.friendId) &&
+                        resource.data.status == 'pending' &&
+                        (request.resource.data.status == 'accepted' ||
+                         request.resource.data.status == 'rejected')) ||
+                       (isOwner(resource.data.userId) &&
+                        resource.data.status == 'pending');
+      
+      // Both users can delete the friendship
+      allow delete: if isAuthenticated() &&
+                       (request.auth.uid == resource.data.userId ||
+                        request.auth.uid == resource.data.friendId);
+    }
+    
+    // ==================== SOS ALERTS COLLECTION ====================
+    
+    match /sos_alerts/{sosId} {
+      // Only friends of the user can read SOS alerts
+      allow read: if isAuthenticated() &&
+                     (isOwner(resource.data.userId) ||
+                      areFriends(request.auth.uid, resource.data.userId));
+      
+      // Only authenticated users can create SOS alerts
+      allow create: if isAuthenticated() &&
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.status == 'active';
+      
+      // Only the user can update/resolve their own SOS alert
+      allow update: if isOwner(resource.data.userId) &&
+                       request.resource.data.userId == resource.data.userId;
+      
+      // Only the user can delete their own SOS alert
+      allow delete: if isOwner(resource.data.userId);
+    }
+    
+    // ==================== MEETING HISTORY COLLECTION ====================
+    
+    match /meeting_history/{meetingId} {
+      // Both participants can read their meeting history
+      allow read: if isAuthenticated() &&
+                     (request.auth.uid == resource.data.user1Id ||
+                      request.auth.uid == resource.data.user2Id);
+      
+      // Cloud Functions create meetings (no direct user creation)
+      // But allow for testing purposes with proper validation
+      allow create: if isAuthenticated() &&
+                       (request.resource.data.user1Id == request.auth.uid ||
+                        request.resource.data.user2Id == request.auth.uid) &&
+                       areFriends(request.resource.data.user1Id, request.resource.data.user2Id);
+      
+      // No updates or deletes allowed by users
+      allow update, delete: if false;
+    }
+    
+    // ==================== WEATHER COLLECTION ====================
+    
+    match /weather/{weatherId} {
+      // Friends of the user can read shared weather
+      allow read: if isAuthenticated() &&
+                     (isOwner(resource.data.userId) ||
+                      areFriends(request.auth.uid, resource.data.userId) ||
+                      (resource.data.sharedWith != null &&
+                       request.auth.uid in resource.data.sharedWith));
+      
+      // Only authenticated users can create weather data
+      allow create: if isAuthenticated() &&
+                       request.resource.data.userId == request.auth.uid;
+      
+      // Only the user can update their own weather data
+      allow update: if isOwner(resource.data.userId);
+      
+      // Only the user can delete their own weather data
+      allow delete: if isOwner(resource.data.userId);
+    }
+    
+    // ==================== DEFAULT DENY ====================
+    
+    // Deny all other access by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
