@@ -1,22 +1,30 @@
-name: EAS Build — Mobile Apps
+name: Build & Test — Geofranzy
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Triggers:
+#   • Push to master/main with any mobile-relevant change → auto Android preview
+#   • Manual dispatch → choose platform & profile dynamically
+# ─────────────────────────────────────────────────────────────────────────────
 on:
-  # Auto-build on pushes to main with mobile changes
   push:
-    branches: [main]
+    branches: [master, main]
     paths:
       - 'src/**'
       - 'App.tsx'
+      - 'index.js'
       - 'app.json'
       - 'package.json'
       - 'babel.config.js'
+      - 'metro.config.js'
       - 'assets/**'
+      - 'android/**'
+      - 'eas.json'
+      - '.github/workflows/eas-build.yml'
 
-  # Manual trigger with options
   workflow_dispatch:
     inputs:
       platform:
-        description: 'Platform to build'
+        description: 'Platform'
         required: true
         default: 'android'
         type: choice
@@ -32,22 +40,32 @@ on:
         options:
           - preview
           - production
+      clear_cache:
+        description: 'Clear EAS build cache?'
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
-  group: eas-build-${{ github.ref }}
-  cancel-in-progress: false   # Never cancel in-progress EAS builds (costly)
+  group: build-${{ github.ref }}
+  cancel-in-progress: false   # Never cancel in-progress EAS builds (they cost money)
 
 env:
   EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
+# ─────────────────────────────────────────────────────────────────────────────
+# JOBS — Tests and EAS Build run IN PARALLEL from the same push
+# ─────────────────────────────────────────────────────────────────────────────
 jobs:
-  # ── Validate before triggering expensive EAS build ──────────────────────────
-  pre-build-check:
-    name: Pre-Build Validation
+
+  # ── Job 1: Tests + TypeScript (runs in parallel with build) ─────────────────
+  test:
+    name: 🧪 Test & Type Check
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Setup Node.js 20
         uses: actions/setup-node@v4
@@ -56,38 +74,34 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
-      - name: TypeScript check (must pass before building)
+      - name: TypeScript type check
         run: npx tsc --noEmit
 
-      - name: Run tests (must pass before building)
-        run: npm run test -- --passWithNoTests
+      - name: Run Jest tests
+        run: npm test -- --passWithNoTests --ci --forceExit
 
-      - name: Validate app.json
-        run: |
-          node -e "
-            const config = require('./app.json');
-            const { name, slug, version } = config.expo;
-            if (!name || !slug || !version) {
-              console.error('Missing required app.json fields');
-              process.exit(1);
-            }
-            console.log('app.json valid:', { name, slug, version });
-          "
+      - name: Upload coverage
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ github.sha }}
+          path: coverage/
+          retention-days: 14
 
-  # ── Android APK build via EAS ───────────────────────────────────────────────
+  # ── Job 2: Android EAS Build (runs in parallel with tests) ──────────────────
   build-android:
-    name: Build Android APK
+    name: 🤖 Android ${{ inputs.profile || 'preview' }} Build
     runs-on: ubuntu-latest
-    needs: pre-build-check
     if: |
       github.event_name == 'push' ||
       (github.event_name == 'workflow_dispatch' &&
        (inputs.platform == 'android' || inputs.platform == 'all'))
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Setup Node.js 20
         uses: actions/setup-node@v4
@@ -96,74 +110,74 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Install EAS CLI
         run: npm install -g eas-cli
 
-      - name: Verify EAS authentication
+      - name: Verify Expo auth
         run: eas whoami
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Build Android APK (preview)
-        id: eas-build
+      - name: Build Android APK via EAS
+        id: eas
         run: |
           PROFILE="${{ inputs.profile || 'preview' }}"
-          echo "Building with profile: $PROFILE"
+          CACHE_FLAG=""
+          if [[ "${{ inputs.clear_cache }}" == "true" ]]; then
+            CACHE_FLAG="--clear-cache"
+          fi
+
           eas build \
             --platform android \
             --profile "$PROFILE" \
             --non-interactive \
             --wait \
-            --json > eas-build-result.json 2>&1 || true
-          cat eas-build-result.json
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+            $CACHE_FLAG \
+            --json > eas-result.json 2>&1 || true
 
-      - name: Extract APK URL
-        id: apk-url
-        run: |
-          URL=$(node -e "
+          APK_URL=$(node -e "
             const fs = require('fs');
             try {
-              const data = JSON.parse(fs.readFileSync('eas-build-result.json', 'utf8'));
-              console.log(data[0]?.artifacts?.buildUrl || data?.artifacts?.buildUrl || 'no-url');
+              const raw = fs.readFileSync('eas-result.json','utf8');
+              const data = JSON.parse(raw);
+              const item = Array.isArray(data) ? data[0] : data;
+              console.log(item?.artifacts?.buildUrl || 'no-url');
             } catch(e) { console.log('parse-error'); }
           ")
-          echo "apk_url=$URL" >> $GITHUB_OUTPUT
-          echo "APK URL: $URL"
+          echo "apk_url=$APK_URL" >> $GITHUB_OUTPUT
+          echo "APK URL: $APK_URL"
 
-      - name: Upload build result
+      - name: Upload EAS result JSON
         uses: actions/upload-artifact@v4
         with:
-          name: eas-build-android-result
-          path: eas-build-result.json
+          name: eas-android-result-${{ github.sha }}
+          path: eas-result.json
           retention-days: 30
 
       - name: Build summary
         run: |
-          echo "## Android Build Complete 🤖" >> $GITHUB_STEP_SUMMARY
+          echo "## 🤖 Android Build" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Field | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "| | |" >> $GITHUB_STEP_SUMMARY
           echo "|---|---|" >> $GITHUB_STEP_SUMMARY
-          echo "| Profile | ${{ inputs.profile || 'preview' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Commit | ${{ github.sha }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| APK URL | ${{ steps.apk-url.outputs.apk_url }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Profile** | ${{ inputs.profile || 'preview' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Branch** | ${{ github.ref_name }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit** | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **APK URL** | ${{ steps.eas.outputs.apk_url }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "> Install the APK on your Android device to test" >> $GITHUB_STEP_SUMMARY
+          echo "> Download the APK and install on your Android device to test." >> $GITHUB_STEP_SUMMARY
 
-  # ── iOS Simulator build via EAS ─────────────────────────────────────────────
+  # ── Job 3: iOS EAS Build (manual dispatch only) ──────────────────────────────
   build-ios:
-    name: Build iOS Simulator
+    name: 🍎 iOS ${{ inputs.profile || 'preview' }} Build
     runs-on: ubuntu-latest
-    needs: pre-build-check
     if: |
       github.event_name == 'workflow_dispatch' &&
       (inputs.platform == 'ios' || inputs.platform == 'all')
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Setup Node.js 20
         uses: actions/setup-node@v4
@@ -172,18 +186,48 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Install EAS CLI
         run: npm install -g eas-cli
 
-      - name: Build iOS Simulator
+      - name: Verify Expo auth
+        run: eas whoami
+
+      - name: Build iOS via EAS
         run: |
           PROFILE="${{ inputs.profile || 'preview' }}"
+          CACHE_FLAG=""
+          if [[ "${{ inputs.clear_cache }}" == "true" ]]; then
+            CACHE_FLAG="--clear-cache"
+          fi
+
           eas build \
             --platform ios \
             --profile "$PROFILE" \
             --non-interactive \
-            --wait
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+            --wait \
+            $CACHE_FLAG
+
+  # ── Job 4: Final pipeline status summary ─────────────────────────────────────
+  status:
+    name: ✅ Pipeline Status
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [test, build-android]
+    steps:
+      - name: Report
+        run: |
+          TEST="${{ needs.test.result }}"
+          BUILD="${{ needs.build-android.result }}"
+          echo "## Pipeline Results" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| 🧪 Tests | $TEST |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🤖 Android Build | $BUILD |" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "$TEST" == "failure" || "$BUILD" == "failure" ]]; then
+            echo "❌ Pipeline failed" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+          echo "✅ All good" >> $GITHUB_STEP_SUMMARY

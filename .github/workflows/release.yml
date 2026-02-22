@@ -9,6 +9,8 @@ on:
   workflow_dispatch:
     inputs:
       environment:
+    inputs:
+      environment:
         description: 'Deploy environment'
         required: true
         default: 'staging'
